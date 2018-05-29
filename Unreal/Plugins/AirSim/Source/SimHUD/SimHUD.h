@@ -67,7 +67,7 @@ private:
     void createMainWidget();
     const std::vector<AirSimSettings::SubwindowSetting>& getSubWindowSettings() const;
     std::vector<AirSimSettings::SubwindowSetting>& getSubWindowSettings();
-    
+
 
     bool getSettingsText(std::string& settingsText);
     bool getSettingsTextFromCommandLine(std::string& settingsText);
@@ -88,6 +88,7 @@ private:
 
     APIPCamera* subwindow_cameras_[AirSimSettings::kSubwindowCount];
     std::unique_ptr<msr::airlib::ApiServerBase> api_server_;
+    std::vector<std::unique_ptr<msr::airlib::ApiServerBase>> api_servers_;
 
     static ASimHUD* instance_;
 };

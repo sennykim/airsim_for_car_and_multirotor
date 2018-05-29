@@ -51,6 +51,23 @@ std::unique_ptr<msr::airlib::ApiServerBase> ASimModeWorldMultiRotor::createApiSe
 #endif
 }
 
+void ASimModeWorldMultiRotor::createApiServers(std::vector<std::unique_ptr<msr::airlib::ApiServerBase>>* api_servers)
+{
+    std::map<uint16_t, VehiclePawnWrapper*> fpv_vehicle_pawn_wrapper_port_map = getVehiclePawnWrapperPortMap();
+    std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = fpv_vehicle_pawn_wrapper_port_map.begin();
+    while(it != fpv_vehicle_pawn_wrapper_port_map.end())
+    {
+        uint16_t port = it->first;
+#ifdef AIRLIB_NO_RPC
+        api_servers->push_back(ASimModeBase::createApiServer());
+#else
+        api_servers->push_back(std::unique_ptr<msr::airlib::ApiServerBase>(new msr::airlib::MultirotorRpcLibServer(
+            getSimModeApi(), getSettings().api_server_address, port)));
+#endif
+        it++;
+    }
+}
+
 void ASimModeWorldMultiRotor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     //stop physics thread before we dismental
@@ -130,14 +147,17 @@ void ASimModeWorldMultiRotor::setupVehiclesAndCamera(std::vector<VehiclePtr>& ve
         }
 
         //set up vehicle pawns
+        int indx = 0;
         for (AActor* pawn : pawns)
         {
+            uint16_t port = 41451 + indx++;
             //initialize each vehicle pawn we found
             TMultiRotorPawn* vehicle_pawn = static_cast<TMultiRotorPawn*>(pawn);
             vehicle_pawn->initializeForBeginPlay(getSettings().additional_camera_settings);
 
             //chose first pawn as FPV if none is designated as FPV
             VehiclePawnWrapper* wrapper = vehicle_pawn->getVehiclePawnWrapper();
+            addVehicle(wrapper, port);
 
             if (getSettings().enable_collision_passthrough)
                 wrapper->getConfig().enable_passthrough_on_collisions = true;
@@ -257,4 +277,3 @@ void ASimModeWorldMultiRotor::setupClockSpeed()
         throw std::invalid_argument(common_utils::Utils::stringf(
             "clock_type %s is not recognized", clock_type.c_str()));
 }
-

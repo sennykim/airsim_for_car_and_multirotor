@@ -52,7 +52,7 @@ CarRpcLibServer::~CarRpcLibServer()
 
 CarApiBase* CarRpcLibServer::getCarApi() const
 {
-    return static_cast<CarApiBase*>(getSimModeApi()->getVehicleApi());
+    return static_cast<CarApiBase*>(getSimModeApi()->getVehicleApi(getServerPort()));
 }
 
 

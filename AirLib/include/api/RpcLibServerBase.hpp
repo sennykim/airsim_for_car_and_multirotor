@@ -22,6 +22,7 @@ public:
 protected:
     void* getServer() const;
     SimModeApiBase* getSimModeApi() const;
+    uint16_t getServerPort() const;
 
 private:
     VehicleApiBase* getVehicleApi() const;
@@ -30,6 +31,7 @@ private:
     SimModeApiBase* simmode_api_;
     struct impl;
     std::unique_ptr<impl> pimpl_;
+    const uint16_t port_;
 };
 
 

@@ -25,7 +25,7 @@ ASimModeBase::ASimModeBase()
 
     static ConstructorHelpers::FClassFinder<AActor> sky_sphere_class(TEXT("Blueprint'/Engine/EngineSky/BP_Sky_Sphere'"));
     sky_sphere_class_ = sky_sphere_class.Succeeded() ? sky_sphere_class.Class : nullptr;
-    
+
 }
 
 void ASimModeBase::BeginPlay()
@@ -39,7 +39,7 @@ void ASimModeBase::BeginPlay()
     setupClockSpeed();
 
     setStencilIDs();
-    
+
     record_tick_count = 0;
     setupInputBindings();
 
@@ -54,7 +54,7 @@ void ASimModeBase::setStencilIDs()
 
     if (getSettings().segmentation_settings.init_method ==
         AirSimSettings::SegmentationSettings::InitMethodType::CommonObjectsRandomIDs) {
-     
+
         UAirBlueprintLib::InitializeMeshStencilIDs(!getSettings().segmentation_settings.override_existing);
     }
     //else don't init
@@ -81,10 +81,10 @@ void ASimModeBase::setupTimeOfDay()
         TArray<AActor*> sky_spheres;
         UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), sky_sphere_class_, sky_spheres);
         if (sky_spheres.Num() == 0)
-            UAirBlueprintLib::LogMessage(TEXT("BP_Sky_Sphere was not found. "), 
+            UAirBlueprintLib::LogMessage(TEXT("BP_Sky_Sphere was not found. "),
                 TEXT("TimeOfDay settings would be ignored."), LogDebugLevel::Failure);
         else if (sky_spheres.Num() > 1)
-            UAirBlueprintLib::LogMessage(TEXT("More than BP_Sky_Sphere were found. "), 
+            UAirBlueprintLib::LogMessage(TEXT("More than BP_Sky_Sphere were found. "),
                 TEXT("TimeOfDay settings would be applied to first one."), LogDebugLevel::Failure);
 
         if (sky_spheres.Num() >= 1) {
@@ -109,13 +109,22 @@ void ASimModeBase::setupTimeOfDay()
     //else ignore
 }
 
-msr::airlib::VehicleApiBase* ASimModeBase::getVehicleApi() const
+void ASimModeBase::addVehicle(VehiclePawnWrapper* vehicle, uint16_t port)
 {
-    auto fpv_vehicle = getFpvVehiclePawnWrapper();
-    if (fpv_vehicle)
-        return fpv_vehicle->getApi();
-    else
-        return nullptr;
+    fpv_vehicle_pawn_wrapper_port_map_.insert(std::make_pair(port, vehicle));
+}
+
+msr::airlib::VehicleApiBase* ASimModeBase::getVehicleApi(uint16_t port) const
+{
+    // auto fpv_vehicle = getFpvVehiclePawnWrapper();
+    // if (fpv_vehicle)
+    //     return fpv_vehicle->getApi();
+    // else
+    //     return nullptr;
+    std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = fpv_vehicle_pawn_wrapper_port_map_.find(port);
+    if (it != fpv_vehicle_pawn_wrapper_port_map_.end())
+        return it->second->getApi();
+    return nullptr;
 }
 
 bool ASimModeBase::isPaused() const
@@ -141,6 +150,16 @@ std::unique_ptr<msr::airlib::ApiServerBase> ASimModeBase::createApiServer() cons
 {
     //should be overriden by derived class
     return std::unique_ptr<msr::airlib::ApiServerBase>(new msr::airlib::DebugApiServer());
+}
+
+void ASimModeBase::createApiServers(std::vector<std::unique_ptr<msr::airlib::ApiServerBase>>* api_servers)
+{
+    //should be overriden by derived class
+}
+
+std::map<uint16_t, VehiclePawnWrapper*> ASimModeBase::getVehiclePawnWrapperPortMap() const
+{
+    return fpv_vehicle_pawn_wrapper_port_map_;
 }
 
 void ASimModeBase::setupClockSpeed()
@@ -206,8 +225,8 @@ void ASimModeBase::showClockStats()
 {
     float clock_speed = getSettings().clock_speed;
     if (clock_speed != 1) {
-        UAirBlueprintLib::LogMessageString("ClockSpeed config, actual: ", 
-            Utils::stringf("%f, %f", clock_speed, ClockFactory::get()->getTrueScaleWrtWallClock()), 
+        UAirBlueprintLib::LogMessageString("ClockSpeed config, actual: ",
+            Utils::stringf("%f, %f", clock_speed, ClockFactory::get()->getTrueScaleWrtWallClock()),
             LogDebugLevel::Informational);
     }
 }
@@ -235,7 +254,7 @@ void ASimModeBase::advanceTimeOfDay()
             FOutputDeviceNull ar;
             sky_sphere_->CallFunctionByNameWithArguments(TEXT("UpdateSunDirection"), ar, NULL, true);
         }
-         
+
     }
 }
 
@@ -320,9 +339,9 @@ void ASimModeBase::SimModeApi::reset()
     simmode_->reset();
 }
 
-msr::airlib::VehicleApiBase* ASimModeBase::SimModeApi::getVehicleApi()
+msr::airlib::VehicleApiBase* ASimModeBase::SimModeApi::getVehicleApi(uint16_t port)
 {
-    return simmode_->getVehicleApi();
+    return simmode_->getVehicleApi(port);
 }
 
 bool ASimModeBase::SimModeApi::isPaused() const

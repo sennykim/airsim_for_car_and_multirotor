@@ -83,35 +83,60 @@ void ASimHUD::inputEventToggleReport()
 void ASimHUD::startApiServer()
 {
     if (AirSimSettings::singleton().enable_rpc) {
-
+        simmode_->createApiServers(&api_servers_);
+        for (auto& api_server : api_servers_)
+        {
 #ifdef AIRLIB_NO_RPC
-        api_server_.reset(new msr::airlib::DebugApiServer());
-#else
-        api_server_ = simmode_->createApiServer();
+            api_server.reset(new msr::airlib::DebugApiServer());
 #endif
-
-        try {
-            api_server_->start();
-        }
-        catch (std::exception& ex) {
-            UAirBlueprintLib::LogMessageString("Cannot start RpcLib Server", ex.what(), LogDebugLevel::Failure);
+            try {
+                api_server->start();
+            }
+            catch (std::exception& ex) {
+                UAirBlueprintLib::LogMessageString("Cannot start RpcLib Server", ex.what(), LogDebugLevel::Failure);
+            }
         }
     }
     else
         UAirBlueprintLib::LogMessageString("API server is disabled in settings", "", LogDebugLevel::Informational);
 
+// #ifdef AIRLIB_NO_RPC
+//         api_server_.reset(new msr::airlib::DebugApiServer());
+// #else
+//         api_server_ = simmode_->createApiServer();
+// #endif
+//
+//         try {
+//             api_server_->start();
+//         }
+//         catch (std::exception& ex) {
+//             UAirBlueprintLib::LogMessageString("Cannot start RpcLib Server", ex.what(), LogDebugLevel::Failure);
+//         }
+//     }
+//     else
+//         UAirBlueprintLib::LogMessageString("API server is disabled in settings", "", LogDebugLevel::Informational);
 }
+
 void ASimHUD::stopApiServer()
 {
-    if (api_server_ != nullptr) {
-        api_server_->stop();
-        api_server_.reset(nullptr);
+    if (api_servers_.empty())
+    {
+        for (auto& api_server : api_servers_)
+        {
+            api_server->stop();
+        }
     }
+    api_servers_.clear();
+    // if (api_server_ != nullptr) {
+    //     api_server_->stop();
+    //     api_server_.reset(nullptr);
+    // }
 }
 
 bool ASimHUD::isApiServerStarted()
 {
-    return api_server_ != nullptr;
+    return api_servers_.empty();
+    // return api_server_ != nullptr;
 }
 
 void ASimHUD::inputEventToggleHelp()
@@ -351,7 +376,7 @@ void ASimHUD::initializeSubWindows()
 // Attempts to parse the settings text from one of multiple locations.
 // First, check the command line for settings provided via "-s" or "--settings" arguments
 // Next, check the executable's working directory for the settings file.
-// Finally, check the user's documents folder. 
+// Finally, check the user's documents folder.
 // If the settings file cannot be read, throw an exception
 
 bool ASimHUD::getSettingsText(std::string& settingsText) {

@@ -23,7 +23,7 @@ public:
     {
     }
 
-    virtual VehicleApiBase* getVehicleApi() override
+    virtual VehicleApiBase* getVehicleApi(uint16_t port) override
     {
         return api_;
     }
@@ -67,7 +67,7 @@ int main(int argc, const char* argv[])
         std::cout << "WARNING: This is not simulation!" << std::endl;
 
     MavLinkDroneController::ConnectionInfo connection_info;
-    
+
     // read settings and override defaults
     auto settings_full_filepath = Settings::getUserDirectoryFullPath("settings.json");
     Settings& settings = Settings::singleton().loadJSonFile(settings_full_filepath);
@@ -119,7 +119,7 @@ int main(int argc, const char* argv[])
     MultirotorApi api(& connector);
     DroneServerSimModeApi simmode_api(&api);
     msr::airlib::MultirotorRpcLibServer server(&simmode_api, connection_info.local_host_ip);
-    
+
     //start server in async mode
     server.start(false);
 
@@ -134,7 +134,7 @@ int main(int argc, const char* argv[])
             for (const auto& message : messages) {
                 std::cout << message << std::endl;
             }
-        }        
+        }
 
         constexpr static std::chrono::milliseconds MessageCheckDurationMillis(100);
         std::this_thread::sleep_for(MessageCheckDurationMillis);

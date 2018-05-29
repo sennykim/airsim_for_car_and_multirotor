@@ -46,7 +46,7 @@ struct RpcLibServerBase::impl {
 typedef msr::airlib_rpclib::RpcLibAdapatorsBase RpcLibAdapatorsBase;
 
 RpcLibServerBase::RpcLibServerBase(SimModeApiBase* simmode_api, string server_address, uint16_t port)
-    : simmode_api_(simmode_api)
+    : simmode_api_(simmode_api), port_(port)
 {
     if (server_address == "")
         pimpl_.reset(new impl(port));
@@ -73,7 +73,7 @@ RpcLibServerBase::RpcLibServerBase(SimModeApiBase* simmode_api, string server_ad
         bind("simSetPose", [&](const RpcLibAdapatorsBase::Pose &pose, bool ignore_collision) -> void {
         getVehicleApi()->simSetPose(pose.to(), ignore_collision);
     });
-    pimpl_->server.bind("simGetPose", [&]() -> RpcLibAdapatorsBase::Pose { 
+    pimpl_->server.bind("simGetPose", [&]() -> RpcLibAdapatorsBase::Pose {
         const auto& pose = getVehicleApi()->simGetPose();
         return RpcLibAdapatorsBase::Pose(pose);
     });
@@ -85,7 +85,7 @@ RpcLibServerBase::RpcLibServerBase(SimModeApiBase* simmode_api, string server_ad
     pimpl_->server.
         bind("simGetSegmentationObjectID", [&](const std::string& mesh_name) -> int {
         return getVehicleApi()->simGetSegmentationObjectID(mesh_name);
-    });    
+    });
 
     pimpl_->server.bind("reset", [&]() -> void {
         getSimModeApi()->reset();
@@ -112,24 +112,24 @@ RpcLibServerBase::RpcLibServerBase(SimModeApiBase* simmode_api, string server_ad
     pimpl_->server.bind("enableApiControl", [&](bool is_enabled) -> void { getVehicleApi()->enableApiControl(is_enabled); });
     pimpl_->server.bind("isApiControlEnabled", [&]() -> bool { return getVehicleApi()->isApiControlEnabled(); });
     pimpl_->server.bind("armDisarm", [&](bool arm) -> bool { return getVehicleApi()->armDisarm(arm); });
-    pimpl_->server.bind("getCollisionInfo", [&]() -> RpcLibAdapatorsBase::CollisionInfo { 
-        const auto& collision_info = getVehicleApi()->getCollisionInfo(); 
+    pimpl_->server.bind("getCollisionInfo", [&]() -> RpcLibAdapatorsBase::CollisionInfo {
+        const auto& collision_info = getVehicleApi()->getCollisionInfo();
         return RpcLibAdapatorsBase::CollisionInfo(collision_info);
     });
 
-    pimpl_->server.bind("simGetObjectPose", [&](const std::string& object_name) -> RpcLibAdapatorsBase::Pose { 
-        const auto& pose = getVehicleApi()->simGetObjectPose(object_name); 
+    pimpl_->server.bind("simGetObjectPose", [&](const std::string& object_name) -> RpcLibAdapatorsBase::Pose {
+        const auto& pose = getVehicleApi()->simGetObjectPose(object_name);
         return RpcLibAdapatorsBase::Pose(pose);
     });
-    
-    pimpl_->server.bind("simPause", [&](bool is_paused) -> void { 
-        getSimModeApi()->pause(is_paused); 
+
+    pimpl_->server.bind("simPause", [&](bool is_paused) -> void {
+        getSimModeApi()->pause(is_paused);
     });
-    pimpl_->server.bind("simIsPaused", [&]() -> bool { 
-        return getSimModeApi()->isPaused(); 
+    pimpl_->server.bind("simIsPaused", [&]() -> bool {
+        return getSimModeApi()->isPaused();
     });
-    pimpl_->server.bind("simContinueForTime", [&](double seconds) -> void { 
-        getSimModeApi()->continueForTime(seconds); 
+    pimpl_->server.bind("simContinueForTime", [&](double seconds) -> void {
+        getSimModeApi()->continueForTime(seconds);
     });
 
     pimpl_->server.suppress_exceptions(true);
@@ -154,9 +154,14 @@ void RpcLibServerBase::stop()
     pimpl_->server.stop();
 }
 
+uint16_t RpcLibServerBase::getServerPort() const
+{
+    return port_;
+}
+
 VehicleApiBase* RpcLibServerBase::getVehicleApi() const
 {
-    return simmode_api_->getVehicleApi();
+    return simmode_api_->getVehicleApi(getServerPort());
 }
 
 void* RpcLibServerBase::getServer() const

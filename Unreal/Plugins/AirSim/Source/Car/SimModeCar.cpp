@@ -130,8 +130,10 @@ void ASimModeCar::setupVehiclesAndCamera(std::vector<VehiclePtr>& vehicles)
         }
 
         //set up vehicle pawns
+        int indx = 0;
         for (AActor* pawn : pawns)
         {
+            uint16_t port = 42451 + indx++;
             //initialize each vehicle pawn we found
             TVehiclePawn* vehicle_pawn = static_cast<TVehiclePawn*>(pawn);
             vehicles.push_back(vehicle_pawn);
@@ -139,6 +141,7 @@ void ASimModeCar::setupVehiclesAndCamera(std::vector<VehiclePtr>& vehicles)
             //chose first pawn as FPV if none is designated as FPV
             VehiclePawnWrapper* wrapper = vehicle_pawn->getVehiclePawnWrapper();
             vehicle_pawn->initializeForBeginPlay(getSettings().engine_sound);
+            addVehicle(wrapper, port);
 
             if (getSettings().enable_collision_passthrough)
                 wrapper->getConfig().enable_passthrough_on_collisions = true;
@@ -185,6 +188,23 @@ std::unique_ptr<msr::airlib::ApiServerBase> ASimModeCar::createApiServer() const
 #endif
 }
 
+void ASimModeCar::createApiServers(std::vector<std::unique_ptr<msr::airlib::ApiServerBase>>* api_servers)
+{
+    std::map<uint16_t, VehiclePawnWrapper*> fpv_vehicle_pawn_wrapper_port_map = getVehiclePawnWrapperPortMap();
+    std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = fpv_vehicle_pawn_wrapper_port_map.begin();
+    while(it != fpv_vehicle_pawn_wrapper_port_map.end())
+    {
+        uint16_t port = it->first;
+#ifdef AIRLIB_NO_RPC
+        api_servers->push_back(ASimModeBase::createApiServer());
+#else
+        api_servers->push_back(std::unique_ptr<msr::airlib::ApiServerBase>(new msr::airlib::CarRpcLibServer(
+            getSimModeApi(), getSettings().api_server_address, port)));
+#endif
+        it++;
+    }
+}
+
 int ASimModeCar::getRemoteControlID(const VehiclePawnWrapper& pawn) const
 {
     msr::airlib::Settings settings;
@@ -204,12 +224,22 @@ void ASimModeCar::createVehicles(std::vector<VehiclePtr>& vehicles)
 
 void ASimModeCar::reset()
 {
-    msr::airlib::VehicleApiBase* api = getVehicleApi();
-    if (api) {
-        UAirBlueprintLib::RunCommandOnGameThread([api]() {
-            api->reset();
-        }, true);
+    for(std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = getVehiclePawnWrapperPortMap().begin(); it != getVehiclePawnWrapperPortMap().end(); ++it)
+    {
+        VehiclePawnWrapper* wrapper = it->second;
+        msr::airlib::VehicleApiBase* api = wrapper->getApi();
+        if (api) {
+            UAirBlueprintLib::RunCommandOnGameThread([api]() {
+                api->reset();
+            }, true);
+        }
     }
+    // msr::airlib::VehicleApiBase* api = getVehicleApi();
+    // if (api) {
+    //     UAirBlueprintLib::RunCommandOnGameThread([api]() {
+    //         api->reset();
+    //     }, true);
+    // }
 
     Super::reset();
 }

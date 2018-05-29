@@ -25,6 +25,8 @@ public:
     VehiclePawnWrapper* getFpvVehiclePawnWrapper() const override;
     std::string getLogString() const;
     virtual std::unique_ptr<msr::airlib::ApiServerBase> createApiServer() const override;
+    virtual void createApiServers(std::vector<std::unique_ptr<msr::airlib::ApiServerBase>>* api_servers) override;
+
 
 
 protected:
@@ -38,7 +40,7 @@ protected:
 private:
     void setupVehiclesAndCamera(std::vector<VehiclePtr>& vehicles);
 
-private:    
+private:
     typedef msr::airlib::ClockFactory ClockFactory;
 
     TArray<uint8> image_;

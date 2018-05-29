@@ -30,7 +30,7 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Recording")
     bool toggleRecording();
 
-public:	
+public:
     // Sets default values for this actor's properties
     ASimModeBase();
     virtual void BeginPlay() override;
@@ -49,9 +49,11 @@ public:
     //must be implemented by derived class
     //can't use pure virtual because of restriction with Unreal
     virtual VehiclePawnWrapper* getFpvVehiclePawnWrapper() const;
-    virtual msr::airlib::VehicleApiBase* getVehicleApi() const;
+    virtual msr::airlib::VehicleApiBase* getVehicleApi(uint16_t port) const;
+    virtual void addVehicle(VehiclePawnWrapper* vehicle, uint16_t port);
 
     virtual std::unique_ptr<msr::airlib::ApiServerBase> createApiServer() const;
+    virtual void createApiServers(std::vector<std::unique_ptr<msr::airlib::ApiServerBase>>* api_servers);
 
     virtual bool isPaused() const;
     virtual void pause(bool is_paused);
@@ -65,6 +67,7 @@ protected:
     void setPhysicsLoopPeriod(long long  period);
     msr::airlib::SimModeApiBase* getSimModeApi() const;
     virtual void setupClockSpeed();
+    std::map<uint16_t, VehiclePawnWrapper*> getVehiclePawnWrapperPortMap() const;
 
 protected: //settings
     int record_tick_count;
@@ -81,7 +84,7 @@ private:
     class SimModeApi : public msr::airlib::SimModeApiBase  {
     public:
         SimModeApi(ASimModeBase* simmode);
-        virtual msr::airlib::VehicleApiBase* getVehicleApi() override;
+        virtual msr::airlib::VehicleApiBase* getVehicleApi(uint16_t port) override;
         virtual void reset() override;
         virtual bool isPaused() const override;
         virtual void pause(bool is_paused) override;
@@ -100,6 +103,8 @@ private:
     std::time_t tod_start_time_;
     long long physics_loop_period_;
     std::unique_ptr<SimModeApi> simmode_api_;
+
+    std::map<uint16_t, VehiclePawnWrapper*> fpv_vehicle_pawn_wrapper_port_map_;
 
 private:
     void setStencilIDs();

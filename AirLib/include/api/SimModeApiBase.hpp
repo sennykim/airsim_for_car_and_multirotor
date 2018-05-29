@@ -12,7 +12,7 @@ namespace msr { namespace airlib {
 
 class SimModeApiBase {
 public:
-    virtual VehicleApiBase* getVehicleApi() = 0;
+    virtual VehicleApiBase* getVehicleApi(uint16_t port) = 0;
     virtual bool isPaused() const = 0;
     virtual void reset() = 0;
     virtual void pause(bool is_paused) = 0;
