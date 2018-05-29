@@ -234,13 +234,6 @@ void ASimModeCar::reset()
             }, true);
         }
     }
-    // msr::airlib::VehicleApiBase* api = getVehicleApi();
-    // if (api) {
-    //     UAirBlueprintLib::RunCommandOnGameThread([api]() {
-    //         api->reset();
-    //     }, true);
-    // }
-
     Super::reset();
 }
 

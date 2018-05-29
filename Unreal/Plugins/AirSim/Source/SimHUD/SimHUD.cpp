@@ -99,22 +99,6 @@ void ASimHUD::startApiServer()
     }
     else
         UAirBlueprintLib::LogMessageString("API server is disabled in settings", "", LogDebugLevel::Informational);
-
-// #ifdef AIRLIB_NO_RPC
-//         api_server_.reset(new msr::airlib::DebugApiServer());
-// #else
-//         api_server_ = simmode_->createApiServer();
-// #endif
-//
-//         try {
-//             api_server_->start();
-//         }
-//         catch (std::exception& ex) {
-//             UAirBlueprintLib::LogMessageString("Cannot start RpcLib Server", ex.what(), LogDebugLevel::Failure);
-//         }
-//     }
-//     else
-//         UAirBlueprintLib::LogMessageString("API server is disabled in settings", "", LogDebugLevel::Informational);
 }
 
 void ASimHUD::stopApiServer()
@@ -127,10 +111,6 @@ void ASimHUD::stopApiServer()
         }
     }
     api_servers_.clear();
-    // if (api_server_ != nullptr) {
-    //     api_server_->stop();
-    //     api_server_.reset(nullptr);
-    // }
 }
 
 bool ASimHUD::isApiServerStarted()

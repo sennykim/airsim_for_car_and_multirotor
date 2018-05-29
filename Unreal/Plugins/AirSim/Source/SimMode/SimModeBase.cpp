@@ -116,11 +116,6 @@ void ASimModeBase::addVehicle(VehiclePawnWrapper* vehicle, uint16_t port)
 
 msr::airlib::VehicleApiBase* ASimModeBase::getVehicleApi(uint16_t port) const
 {
-    // auto fpv_vehicle = getFpvVehiclePawnWrapper();
-    // if (fpv_vehicle)
-    //     return fpv_vehicle->getApi();
-    // else
-    //     return nullptr;
     std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = fpv_vehicle_pawn_wrapper_port_map_.find(port);
     if (it != fpv_vehicle_pawn_wrapper_port_map_.end())
         return it->second->getApi();
