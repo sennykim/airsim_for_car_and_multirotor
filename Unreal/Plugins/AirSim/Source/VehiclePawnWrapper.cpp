@@ -124,11 +124,6 @@ std::string VehiclePawnWrapper::getVehicleConfigName() const
         : getConfig().vehicle_config_name;
 }
 
-void VehiclePawnWrapper::setVehicleConfigName(std::string vehicle_config_name)
-{
-    getConfig().vehicle_config_name = vehicle_config_name;
-}
-
 int VehiclePawnWrapper::getRemoteControlID() const
 {
     typedef msr::airlib::AirSimSettings AirSimSettings;

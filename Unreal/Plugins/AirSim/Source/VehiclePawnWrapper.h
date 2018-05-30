@@ -85,7 +85,6 @@ public: //interface
 
     msr::airlib::Pose getActorPose(std::string actor_name);
     std::string getVehicleConfigName() const;
-    void setVehicleConfigName(std::string vehicle_config_name);
 
     int getRemoteControlID() const;
 

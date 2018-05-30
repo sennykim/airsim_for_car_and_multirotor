@@ -67,14 +67,13 @@ void ASimModeWorldBoth::createApiServers(std::vector<std::unique_ptr<msr::airlib
 #ifdef AIRLIB_NO_RPC
         api_servers->push_back(ASimModeBase::createApiServer());
 #else
-        if (it->second->getVehicleConfigName() == "PhysXCar")
+        std::map<uint16_t, std::string>::const_iterator it_pawn = port_pawn_map_.find(port);
+        if (it_pawn->second == "Car")
             api_servers->push_back(std::unique_ptr<msr::airlib::ApiServerBase>(new msr::airlib::CarRpcLibServer(
                 getSimModeApi(), getSettings().api_server_address, port)));
-        else if (it->second->getVehicleConfigName() == "SimpleFlight")
+        else
             api_servers->push_back(std::unique_ptr<msr::airlib::ApiServerBase>(new msr::airlib::MultirotorRpcLibServer(
                 getSimModeApi(), getSettings().api_server_address, port)));
-        else
-            std::cout << "***ERROR in createApiServers()***" << std::endl;
 #endif
         it++;
     }
@@ -111,35 +110,6 @@ void ASimModeWorldBoth::setupVehiclesAndCamera(std::vector<VehiclePtr>& vehicles
     //we will either find external camera if it already exist in evironment or create one
     APIPCamera* external_camera;
 
-    //find all BP camera directors in the environment
-    {
-        TArray<AActor*> camera_dirs;
-        UAirBlueprintLib::FindAllActor<ACameraDirector>(this, camera_dirs);
-        if (camera_dirs.Num() == 0) {
-            //create director
-            FActorSpawnParameters camera_spawn_params;
-            camera_spawn_params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-            CameraDirector = this->GetWorld()->SpawnActor<ACameraDirector>(camera_director_class_, camera_transform, camera_spawn_params);
-            // CameraDirector->setFollowDistance(225);
-            // CameraDirector->setCameraRotationLagEnabled(false);
-            // CameraDirector->setFpvCameraIndex(0);
-            // CameraDirector->enableFlyWithMeMode();
-            CameraDirector->setFollowDistance(follow_distance_);
-            CameraDirector->setCameraRotationLagEnabled(true);
-            CameraDirector->setFpvCameraIndex(3);
-            spawned_actors_.Add(CameraDirector);
-
-            //create external camera required for the director
-            external_camera = this->GetWorld()->SpawnActor<APIPCamera>(external_camera_class_, camera_transform, camera_spawn_params);
-            spawned_actors_.Add(external_camera);
-        }
-        else {
-            CameraDirector = static_cast<ACameraDirector*>(camera_dirs[0]);
-            external_camera = CameraDirector->getExternalCamera();
-        }
-    }
-
-
     //find all vehicle pawns - multirotors
     {
         TArray<AActor*> pawns;
@@ -172,7 +142,7 @@ void ASimModeWorldBoth::setupVehiclesAndCamera(std::vector<VehiclePtr>& vehicles
 
             //chose first pawn as FPV if none is designated as FPV
             VehiclePawnWrapper* wrapper = vehicle_pawn->getVehiclePawnWrapper();
-            wrapper->setVehicleConfigName("SimpleFlight");
+            port_pawn_map_.insert(std::make_pair(port, "Multirotor"));
             addVehicle(wrapper, port);
 
             if (getSettings().enable_collision_passthrough)
@@ -224,7 +194,7 @@ void ASimModeWorldBoth::setupVehiclesAndCamera(std::vector<VehiclePtr>& vehicles
 
             //chose first pawn as FPV if none is designated as FPV
             VehiclePawnWrapper* wrapper = vehicle_pawn->getVehiclePawnWrapper();
-            wrapper->setVehicleConfigName("PhysXCar");
+            port_pawn_map_.insert(std::make_pair(port, "Car"));
             addVehicle(wrapper, port);
 
             vehicle_pawn->initializeForBeginPlay(getSettings().engine_sound);
@@ -235,6 +205,34 @@ void ASimModeWorldBoth::setupVehiclesAndCamera(std::vector<VehiclePtr>& vehicles
                 fpv_vehicle_pawn_wrapper_ = wrapper;
         }
 
+    }
+
+    //find all BP camera directors in the environment
+    {
+        TArray<AActor*> camera_dirs;
+        UAirBlueprintLib::FindAllActor<ACameraDirector>(this, camera_dirs);
+        if (camera_dirs.Num() == 0) {
+            //create director
+            FActorSpawnParameters camera_spawn_params;
+            camera_spawn_params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+            CameraDirector = this->GetWorld()->SpawnActor<ACameraDirector>(camera_director_class_, camera_transform, camera_spawn_params);
+            // CameraDirector->setFollowDistance(225);
+            // CameraDirector->setCameraRotationLagEnabled(false);
+            // CameraDirector->setFpvCameraIndex(0);
+            // CameraDirector->enableFlyWithMeMode();
+            CameraDirector->setFollowDistance(follow_distance_);
+            CameraDirector->setCameraRotationLagEnabled(true);
+            CameraDirector->setFpvCameraIndex(3);
+            spawned_actors_.Add(CameraDirector);
+
+            //create external camera required for the director
+            external_camera = this->GetWorld()->SpawnActor<APIPCamera>(external_camera_class_, camera_transform, camera_spawn_params);
+            spawned_actors_.Add(external_camera);
+        }
+        else {
+            CameraDirector = static_cast<ACameraDirector*>(camera_dirs[0]);
+            external_camera = CameraDirector->getExternalCamera();
+        }
     }
 
     fpv_vehicle_pawn_wrapper_->possess();

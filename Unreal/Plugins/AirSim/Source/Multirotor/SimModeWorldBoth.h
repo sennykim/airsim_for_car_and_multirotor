@@ -75,4 +75,6 @@ private:
     std::atomic<float> current_clockspeed_;
     std::atomic<TTimeDelta> pause_period_;
     std::atomic<TTimePoint> pause_period_start_;
+
+    std::map<uint16_t, std::string> port_pawn_map_;
 };

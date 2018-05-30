@@ -360,7 +360,7 @@ private:
                 if (simmode_name == "Multirotor")
                     view_mode_string = "FlyWithMe";
                 else if (simmode_name == "Both")
-                    view_mode_string = "FlyWithMe";
+                    view_mode_string = "SpringArmChase";
                 else
                     view_mode_string = "SpringArmChase";
             }
