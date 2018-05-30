@@ -3,13 +3,18 @@ For connecting to the AirSim drone environment and testing API functionality
 """
 
 import os
+import sys
 import tempfile
 import pprint
 
 from AirSimClient import *
 
-num_drones  = 2
-base_port = 41451
+if len(sys.argv) != 2:
+    print("Usage: python PythonClient/hello_multi_drone.py <number of spawns>")
+    exit()
+
+num_drones  = int(sys.argv[1])
+base_port   = 41451
 
 for i in range(num_drones):
     port = base_port + i

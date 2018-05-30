@@ -224,7 +224,9 @@ void ASimModeCar::createVehicles(std::vector<VehiclePtr>& vehicles)
 
 void ASimModeCar::reset()
 {
-    for(std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = getVehiclePawnWrapperPortMap().begin(); it != getVehiclePawnWrapperPortMap().end(); ++it)
+    std::map<uint16_t, VehiclePawnWrapper*> fpv_vehicle_pawn_wrapper_port_map = getVehiclePawnWrapperPortMap();
+    std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = fpv_vehicle_pawn_wrapper_port_map.begin();
+    while(it != fpv_vehicle_pawn_wrapper_port_map.end())
     {
         VehiclePawnWrapper* wrapper = it->second;
         msr::airlib::VehicleApiBase* api = wrapper->getApi();
@@ -233,6 +235,7 @@ void ASimModeCar::reset()
                 api->reset();
             }, true);
         }
+        it++;
     }
     Super::reset();
 }

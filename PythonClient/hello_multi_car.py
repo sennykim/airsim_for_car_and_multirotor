@@ -1,19 +1,24 @@
+import sys
+import tempfile
 from AirSimClient import *
 
-# connect to the AirSim simulator
+if len(sys.argv) != 2:
+    print("Usage: python PythonClient/hello_multi_car.py <number of spawns>")
+    exit()
 
-num_cars  = 2
+num_cars  = int(sys.argv[1])
 base_port = 42451
 
 for i in range(num_cars):
     port = base_port + i
+    # connect to the AirSim simulator
     client = CarClient(port=port)
     client.confirmConnection()
     client.enableApiControl(True)
     car_controls = CarControls()
     print("Car Client on Port Number %d" % port)
 
-    for idx in range(3):
+    for idx in range(1):
         # get state of the car
         car_state = client.getCarState()
         print("Speed %d, Gear %d" % (car_state.speed, car_state.gear))
@@ -59,7 +64,14 @@ for i in range(num_cars):
         print('Retrieved images: %d', len(responses))
 
         for response in responses:
-            filename = 'c:/temp/py' + str(idx)
+            tmp_dir = os.path.join(tempfile.gettempdir(), "airsim_car")
+            filename = tmp_dir + '/py' + str(idx)
+            print ("Saving images to %s" % tmp_dir)
+            try:
+                os.makedirs(tmp_dir)
+            except OSError:
+                if not os.path.isdir(tmp_dir):
+                    raise
 
             if response.pixels_as_float:
                 print("Type %d, size %d" % (response.image_type, len(response.image_data_float)))
