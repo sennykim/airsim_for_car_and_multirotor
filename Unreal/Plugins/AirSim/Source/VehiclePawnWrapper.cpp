@@ -28,14 +28,14 @@ void VehiclePawnWrapper::setupCamerasFromSettings()
     for (int image_type = -1; image_type < image_count; ++image_type) {
         for (int camera_index = 0; camera_index < getCameraCount(); ++camera_index) {
             APIPCamera* camera = getCamera(camera_index);
-            camera->setImageTypeSettings(image_type, AirSimSettings::singleton().capture_settings[image_type], 
+            camera->setImageTypeSettings(image_type, AirSimSettings::singleton().capture_settings[image_type],
                 AirSimSettings::singleton().noise_settings[image_type]);
         }
     }
 }
 
 
-void VehiclePawnWrapper::onCollision(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, 
+void VehiclePawnWrapper::onCollision(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation,
     FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
     // Deflect along the surface when we collide.
@@ -56,8 +56,8 @@ void VehiclePawnWrapper::onCollision(class UPrimitiveComponent* MyComp, class AA
     ++state_.collision_info.collision_count;
 
 
-    UAirBlueprintLib::LogMessageString("Collision", Utils::stringf("#%d with %s - ObjID %d", 
-        state_.collision_info.collision_count, 
+    UAirBlueprintLib::LogMessageString("Collision", Utils::stringf("#%d with %s - ObjID %d",
+        state_.collision_info.collision_count,
         state_.collision_info.object_name.c_str(), state_.collision_info.object_id),
         LogDebugLevel::Failure);
 }
@@ -118,10 +118,15 @@ void VehiclePawnWrapper::getRawVehicleSettings(msr::airlib::Settings& settings) 
     vehicle_settings.getRawSettings(settings);
 }
 
-std::string VehiclePawnWrapper::getVehicleConfigName() const 
+std::string VehiclePawnWrapper::getVehicleConfigName() const
 {
     return getConfig().vehicle_config_name == "" ? msr::airlib::AirSimSettings::singleton().default_vehicle_config
         : getConfig().vehicle_config_name;
+}
+
+void VehiclePawnWrapper::setVehicleConfigName(std::string vehicle_config_name)
+{
+    getConfig().vehicle_config_name = vehicle_config_name;
 }
 
 int VehiclePawnWrapper::getRemoteControlID() const
@@ -157,7 +162,7 @@ void VehiclePawnWrapper::initialize(APawn* pawn, const std::vector<APIPCamera*>&
     initial_state_.ground_offset = FVector(0, 0, initial_state_.mesh_bounds.Z);
     initial_state_.transformation_offset = pawn_->GetActorLocation() - initial_state_.ground_offset;
     ground_margin_ = FVector(0, 0, 20); //TODO: can we explain pawn_ experimental setting? 7 seems to be minimum
-    ground_trace_end_ = initial_state_.ground_offset + ground_margin_; 
+    ground_trace_end_ = initial_state_.ground_offset + ground_margin_;
 
     initial_state_.start_location = getUUPosition();
     initial_state_.last_position = initial_state_.start_location;
@@ -264,7 +269,7 @@ void VehiclePawnWrapper::toggleTrace()
 
     if (!state_.tracing_enabled)
         UKismetSystemLibrary::FlushPersistentDebugLines(pawn_->GetWorld());
-    else {     
+    else {
         state_.debug_position_offset = state_.current_debug_position - state_.current_position;
         state_.last_debug_position = state_.last_position;
     }
@@ -407,5 +412,3 @@ msr::airlib::Pose VehiclePawnWrapper::getActorPose(std::string actor_name)
     return actor ? toPose(actor->GetActorLocation(), actor->GetActorQuat())
         : Pose::nanPose();
 }
-
-

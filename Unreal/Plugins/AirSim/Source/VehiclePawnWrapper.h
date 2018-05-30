@@ -28,10 +28,10 @@ public: //types
 
 public:
     struct WrapperConfig {
-        bool is_fpv_vehicle; 
+        bool is_fpv_vehicle;
         std::string vehicle_config_name;
-        bool enable_collisions; 
-        bool enable_passthrough_on_collisions; 
+        bool enable_collisions;
+        bool enable_passthrough_on_collisions;
         bool enable_trace;
 
         WrapperConfig() :
@@ -51,7 +51,7 @@ public: //interface
     void initialize(APawn* pawn, const std::vector<APIPCamera*>& cameras, const WrapperConfig& config = WrapperConfig());
 
     void reset();
-    void onCollision(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, 
+    void onCollision(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp,
         bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit);
 
     const APIPCamera* getCamera(int index = 0) const;
@@ -85,6 +85,7 @@ public: //interface
 
     msr::airlib::Pose getActorPose(std::string actor_name);
     std::string getVehicleConfigName() const;
+    void setVehicleConfigName(std::string vehicle_config_name);
 
     int getRemoteControlID() const;
 
@@ -135,7 +136,7 @@ private: //vars
         FVector last_debug_position;
         FVector current_position;
         FVector current_debug_position;
-        FVector debug_position_offset;        
+        FVector debug_position_offset;
         bool tracing_enabled;
         bool collisions_enabled;
         bool passthrough_enabled;
@@ -147,6 +148,6 @@ private: //vars
         FVector ground_offset;
         FVector transformation_offset;
     };
-    
+
     State state_, initial_state_;
 };

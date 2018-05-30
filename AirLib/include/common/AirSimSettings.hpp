@@ -55,7 +55,7 @@ public: //types
 
         PawnPath(const std::string& pawn_bp_val = "",
             const std::string& slippery_mat_val = "/AirSim/VehicleAdv/PhysicsMaterials/Slippery.Slippery",
-            const std::string& non_slippery_mat_val = "/AirSim/VehicleAdv/PhysicsMaterials/NonSlippery.NonSlippery") 
+            const std::string& non_slippery_mat_val = "/AirSim/VehicleAdv/PhysicsMaterials/NonSlippery.NonSlippery")
             : pawn_bp(pawn_bp_val), slippery_mat(slippery_mat_val), non_slippery_mat(non_slippery_mat_val)
         {
         }
@@ -142,7 +142,7 @@ public: //types
         float HorzNoiseLinesDensityY = 0.01f;
         float HorzNoiseLinesDensityXY = 0.5f;
 
-        float HorzDistortionContrib = 1.0f; 
+        float HorzDistortionContrib = 1.0f;
         float HorzDistortionStrength = 0.002f;
 
     };
@@ -204,7 +204,7 @@ public: //fields
     std::map<std::string, PawnPath> pawn_paths;
 
 public: //methods
-    static AirSimSettings& singleton() 
+    static AirSimSettings& singleton()
     {
         static AirSimSettings instance;
         return instance;
@@ -260,10 +260,10 @@ public: //methods
         enable_collision_passthrough = false;
         clock_type = "";
         clock_speed = 1.0f;
-        engine_sound = true;     
+        engine_sound = true;
         log_messages_visible = true;
         //0,0,0 in Unreal is mapped to this GPS coordinates
-        origin_geopoint = HomeGeoPoint(GeoPoint(47.641468, -122.140165, 122)); 
+        origin_geopoint = HomeGeoPoint(GeoPoint(47.641468, -122.140165, 122));
     }
 
     VehicleSettings getVehicleSettings(const std::string& vehicle_name)
@@ -316,13 +316,17 @@ private:
                 default_vehicle_config = "SimpleFlight";
             else if (simmode_name == "Car")
                 default_vehicle_config = "PhysXCar";
-            else       
+            else if (simmode_name == "Both")
+                default_vehicle_config = "SimpleFlight";
+            else
                 warning_messages.push_back("SimMode is not valid: " + simmode_name);
         }
 
         physics_engine_name = settings.getString("PhysicsEngineName", "");
         if (physics_engine_name == "") {
             if (simmode_name == "Multirotor")
+                physics_engine_name = "FastPhysicsEngine";
+            else if (simmode_name == "Both")
                 physics_engine_name = "FastPhysicsEngine";
             else
                 physics_engine_name = "PhysX";
@@ -335,7 +339,7 @@ private:
         settings_version_actual = settings.getFloat("SettingsVersion", settings.getFloat("SettingdVersion", 0));
 
         if (settings_version_actual < settings_version_minimum) {
-            if ((settings.size() == 1 && 
+            if ((settings.size() == 1 &&
                 ((settings.getString("SeeDocsAt", "") != "") || settings.getString("see_docs_at", "") != ""))
                 || (settings.size() == 0)) {
                 //no warnings because we have default settings
@@ -354,6 +358,8 @@ private:
         if (view_mode_string == "") {
             if (usage_scenario == "") {
                 if (simmode_name == "Multirotor")
+                    view_mode_string = "FlyWithMe";
+                else if (simmode_name == "Both")
                     view_mode_string = "FlyWithMe";
                 else
                     view_mode_string = "SpringArmChase";
@@ -422,7 +428,13 @@ private:
                 "Timestamp", "Speed (kmph)", "Throttle" , "Steering", "Brake", "Gear", "ImageName"
             };
         }
-        else 
+        if (simmode_name == "Both") {
+            recording_settings.header_columns = std::vector<std::string> {
+                "Timestamp", "Position(x)", "Position(y)", "Position(z)", "Orientation(w)",
+                "Orientation(x)", "Orientation(y)", "Orientation(z)", "Speed (kmph)", "Throttle" , "Steering", "Brake", "Gear", "ImageName"
+            };
+        }
+        else
             warning_messages.push_back("SimMode is not valid: " + simmode_name);
     }
 
@@ -431,7 +443,7 @@ private:
         Settings json_parent;
         if (settings.getChild("CaptureSettings", json_parent)) {
             for (size_t child_index = 0; child_index < json_parent.size(); ++child_index) {
-                Settings json_settings_child;     
+                Settings json_settings_child;
                 if (json_parent.getChild(child_index, json_settings_child)) {
                     CaptureSetting capture_setting;
                     createCaptureSettings(json_settings_child, capture_setting);
@@ -450,7 +462,7 @@ private:
             PawnPath("Class'/AirSim/VehicleAdv/SUV/SuvCarPawn.SuvCarPawn_C'"));
         pawn_paths.emplace("DefaultQuadrotor",
             PawnPath("Class'/AirSim/Blueprints/BP_FlyingPawn.BP_FlyingPawn_C'"));
-        
+
 
         msr::airlib::Settings pawn_paths_child;
         if (settings.getChild("PawnPaths", pawn_paths_child)) {
@@ -510,7 +522,7 @@ private:
         Settings json_parent;
         if (settings.getChild("NoiseSettings", json_parent)) {
             for (size_t child_index = 0; child_index < json_parent.size(); ++child_index) {
-                Settings json_settings_child;     
+                Settings json_settings_child;
                 if (json_parent.getChild(child_index, json_settings_child)) {
                     NoiseSetting noise_setting;
                     createNoiseSettings(json_settings_child, noise_setting);
@@ -571,7 +583,7 @@ private:
         capture_setting.auto_exposure_min_brightness = settings.getFloat("AutoExposureMinBrightness", capture_setting.auto_exposure_min_brightness);
         capture_setting.motion_blur_amount = settings.getFloat("MotionBlurAmount", capture_setting.motion_blur_amount);
         capture_setting.image_type = settings.getInt("ImageType", 0);
-        capture_setting.target_gamma = settings.getFloat("TargetGamma", 
+        capture_setting.target_gamma = settings.getFloat("TargetGamma",
             capture_setting.image_type == 0 ? CaptureSetting::kSceneTargetGamma : Utils::nan<float>());
 
         std::string projection_mode = Utils::toLower(settings.getString("ProjectionMode", ""));

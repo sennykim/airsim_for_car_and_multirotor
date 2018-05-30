@@ -5,6 +5,7 @@
 
 #include "Multirotor/SimModeWorldMultiRotor.h"
 #include "Car/SimModeCar.h"
+#include "Multirotor/SimModeWorldBoth.h"
 #include "common/AirSimSettings.hpp"
 #include "api/DebugApiServer.hpp"
 #include <stdexcept>
@@ -301,7 +302,14 @@ std::string ASimHUD::getSimModeFromUser()
         "Would you like to use car simulation? Choose no to use quadrotor simulation.",
         "Choose Vehicle"))
     {
-        return "Multirotor";
+        if (EAppReturnType::Yes == UAirBlueprintLib::ShowMessage(EAppMsgType::YesNo,
+            "Would you like to use car in quadrotor simulation? Choose no to simulate only quadrotor.",
+            "Choose Vehicle"))
+        {
+            return "Both";
+        }
+        else
+            return "Multirotor";
     }
     else
         return "Car";
@@ -318,6 +326,8 @@ void ASimHUD::createSimMode()
         simmode_ = this->GetWorld()->SpawnActor<ASimModeWorldMultiRotor>(FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
     else if (simmode_name == "Car")
         simmode_ = this->GetWorld()->SpawnActor<ASimModeCar>(FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
+    else if (simmode_name == "Both")
+        simmode_ = this->GetWorld()->SpawnActor<ASimModeWorldBoth>(FVector::ZeroVector, FRotator::ZeroRotator, simmode_spawn_params);
     else
         UAirBlueprintLib::LogMessageString("SimMode is not valid: ", simmode_name, LogDebugLevel::Failure);
 }
