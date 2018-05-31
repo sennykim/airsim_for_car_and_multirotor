@@ -15,6 +15,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
 
+#include "Runtime/Engine/Classes/Engine/World.h"
 #include "Runtime/Landscape/Classes/LandscapeComponent.h"
 #include "common/AirSimSettings.hpp"
 #include <string>
@@ -274,4 +275,3 @@ private:
 
     static IImageWrapperModule* image_wrapper_module_;
 };
-
