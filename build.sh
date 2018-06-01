@@ -60,7 +60,7 @@ else
 fi
 
 #install EIGEN library
-if [[ !(-d "./AirLib/deps/eigen3/Eigen") ]]; then 
+if [[ !(-d "./AirLib/deps/eigen3/Eigen") ]]; then
     echo "eigen is not installed. Please run setup.sh first."
     exit 1
 fi
@@ -91,7 +91,7 @@ pushd $build_dir  >/dev/null
 # final linking of the binaries can fail due to a missing libc++abi library
 # (happens on Fedora, see https://bugzilla.redhat.com/show_bug.cgi?id=1332306).
 # So we only build the libraries here for now
-make 
+make
 popd >/dev/null
 
 
@@ -112,6 +112,8 @@ rsync -a --delete AirLib Unreal/Plugins/AirSim/Source
 Unreal/Environments/Blocks/clean.sh
 mkdir -p Unreal/Environments/Blocks/Plugins
 rsync -a --delete Unreal/Plugins/AirSim Unreal/Environments/Blocks/Plugins
+
+git apply rpclib.patch
 
 set +x
 

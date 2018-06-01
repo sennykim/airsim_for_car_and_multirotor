@@ -94,12 +94,10 @@ std::string FileSystem::createDirectory(const std::string& fullPath) {
     }
 #elif defined(__linux__)
     int success = mkdir_p(fullPath.c_str());
-    std::cout << "****** DEBUG LINUX ********" << success << " " << fullPath.c_str()  << " " << errno << std::endl;
     if (success != 0 && errno != EEXIST)
         throw std::ios_base::failure(Utils::stringf("mkdir failed for path %s with errorno %i and message %s", fullPath.c_str(), errno, strerror(errno)).c_str());
 #else
     int success = mkdir(fullPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-    std::cout << "****** DEBUG ELSE ********" << success << " " << fullPath.c_str()  << " " << errno << std::endl;
     if (success != 0 && errno != EEXIST)
         throw std::ios_base::failure(Utils::stringf("mkdir failed for path %s with errorno %i and message %s", fullPath.c_str(), errno, strerror(errno)).c_str());
 #endif
