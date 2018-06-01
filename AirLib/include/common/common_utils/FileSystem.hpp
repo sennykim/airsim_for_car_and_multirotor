@@ -9,13 +9,13 @@
 #include <string>
 #include "Utils.hpp"
 
-// This defines a default folder name for all the files created by AirLib so they 
+// This defines a default folder name for all the files created by AirLib so they
 // are all gathered nicely in one place in the user's documents folder.
 #ifndef ProductFolderName
-#define ProductFolderName "AirSim" 
+#define ProductFolderName "AirSim"
 #endif
-    
-namespace common_utils { 
+
+namespace common_utils {
 class FileSystem
 {
     typedef unsigned int uint;
@@ -30,6 +30,7 @@ public:
         '/';
 #endif
 
+    static int mkdir_p(const char *path);
     static std::string createDirectory(const std::string& fullPath);
 
     static std::string getUserHomeFolder()
@@ -70,7 +71,7 @@ public:
         if (parentFolder.size() > 0 && parentFolder[len - 1] == kPathSeparator) {
             // parent already ends with '/'
             return parentFolder + child;
-        } 
+        }
         len = child.size();
         if (len > 0 && child[0] == kPathSeparator) {
             // child already starts with '/'
@@ -113,7 +114,7 @@ public:
         return fullPath;
     }
 
-    static std::string getLogFileNamePath(const std::string& fullPath, const std::string& prefix, const std::string& suffix, const std::string& extension, 
+    static std::string getLogFileNamePath(const std::string& fullPath, const std::string& prefix, const std::string& suffix, const std::string& extension,
         bool file_timestamp)
     {
         //TODO: because this bug we are using alternative code with stringstream
@@ -135,7 +136,7 @@ public:
     }
 
     static void openTextFile(const std::string& filepath, std::ifstream& file){
-        
+
 #ifdef _WIN32
         // WIN32 will create the wrong file names if we don't first convert them to UTF-16.
         std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
@@ -145,9 +146,9 @@ public:
         file.open(filepath, std::ios::in);
 #endif
     }
-    
+
     static void createBinaryFile(const std::string& filepath, std::ofstream& file){
-        
+
 #ifdef _WIN32
         // WIN32 will create the wrong file names if we don't first convert them to UTF-16.
         std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
@@ -157,9 +158,9 @@ public:
         file.open(filepath, std::ios::binary | std::ios::trunc);
 #endif
     }
-    
+
     static void createTextFile(const std::string& filepath, std::ofstream& file){
-        
+
 #ifdef _WIN32
         // WIN32 will create the wrong file names if we don't first convert them to UTF-16.
         std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
@@ -172,7 +173,7 @@ public:
         if (file.fail())
             throw std::ios_base::failure(std::strerror(errno));
     }
-    
+
     static std::string createLogFile(const std::string& suffix, std::ofstream& flog)
     {
         std::string log_folderpath = common_utils::FileSystem::getLogFolderPath(false);
@@ -195,7 +196,7 @@ public:
                 throw;
         }
         return line;
-    }    
+    }
 
     static void appendLineToFile(const std::string& filepath, const std::string& line)
     {
@@ -216,5 +217,5 @@ public:
 
 };
 
-} 
+}
 #endif

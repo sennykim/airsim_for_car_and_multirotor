@@ -36,7 +36,47 @@
 #include <mach-o/dyld.h>
 #endif
 
+#ifdef __linux__
+#include <limits.h>
+#endif
+
 using namespace common_utils;
+
+int FileSystem::mkdir_p(const char *path)
+{
+    /* Adapted from http://stackoverflow.com/a/2336245/119527 */
+    const size_t len = strlen(path);
+    char _path[PATH_MAX];
+    char *p;
+
+    errno = 0;
+
+    /* Copy string so its mutable */
+    if (len > sizeof(_path)-1) {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    strcpy(_path, path);
+
+    /* Iterate the string */
+    for (p = _path + 1; *p; p++) {
+        if (*p == '/') {
+            /* Temporarily truncate */
+            *p = '\0';
+            if (mkdir(_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
+                if (errno != EEXIST)
+                    return -1;
+            }
+            *p = '/';
+        }
+    }
+
+    if (mkdir(_path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
+        if (errno != EEXIST)
+            return -1;
+    }
+    return 0;
+}
 
 // File names are unicode (std::wstring), because users can create folders containing unicode characters on both
 // Windows, OSX and Linux.
@@ -52,8 +92,14 @@ std::string FileSystem::createDirectory(const std::string& fullPath) {
             throw std::invalid_argument(Utils::stringf("Error creating directory, hr=%d", hr));
         }
     }
+#elif defined(__linux__)
+    int success = mkdir_p(fullPath.c_str());
+    std::cout << "****** DEBUG LINUX ********" << success << " " << fullPath.c_str()  << " " << errno << std::endl;
+    if (success != 0 && errno != EEXIST)
+        throw std::ios_base::failure(Utils::stringf("mkdir failed for path %s with errorno %i and message %s", fullPath.c_str(), errno, strerror(errno)).c_str());
 #else
     int success = mkdir(fullPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    std::cout << "****** DEBUG ELSE ********" << success << " " << fullPath.c_str()  << " " << errno << std::endl;
     if (success != 0 && errno != EEXIST)
         throw std::ios_base::failure(Utils::stringf("mkdir failed for path %s with errorno %i and message %s", fullPath.c_str(), errno, strerror(errno)).c_str());
 #endif
