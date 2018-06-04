@@ -177,6 +177,8 @@ mv temp_eigen/eigen*/Eigen AirLib/deps/eigen3
 rm -rf temp_eigen
 rm 3.3.2.zip
 
+git apply rpclib.patch
+
 popd >/dev/null
 
 set +x

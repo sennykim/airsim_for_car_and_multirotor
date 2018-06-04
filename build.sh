@@ -113,8 +113,6 @@ Unreal/Environments/Blocks/clean.sh
 mkdir -p Unreal/Environments/Blocks/Plugins
 rsync -a --delete Unreal/Plugins/AirSim Unreal/Environments/Blocks/Plugins
 
-git apply rpclib.patch
-
 set +x
 
 echo ""
