@@ -76,6 +76,9 @@ int FileSystem::mkdir_p(const char *path)
         if (errno != EEXIST)
             return -1;
     }
+#else
+    // Unused expression - dummy
+    (void)path;
 #endif
     return 0;
 }
