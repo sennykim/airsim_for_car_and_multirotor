@@ -44,6 +44,7 @@ using namespace common_utils;
 
 int FileSystem::mkdir_p(const char *path)
 {
+#ifdef __linux__
     /* Adapted from http://stackoverflow.com/a/2336245/119527 */
     const size_t len = strlen(path);
     char _path[PATH_MAX];
@@ -75,6 +76,7 @@ int FileSystem::mkdir_p(const char *path)
         if (errno != EEXIST)
             return -1;
     }
+#endif
     return 0;
 }
 
