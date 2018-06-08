@@ -406,12 +406,16 @@ void ASimModeWorldBoth::reset()
     std::map<uint16_t, VehiclePawnWrapper*>::const_iterator it = fpv_vehicle_pawn_wrapper_port_map.begin();
     while(it != fpv_vehicle_pawn_wrapper_port_map.end())
     {
-        VehiclePawnWrapper* wrapper = it->second;
-        msr::airlib::VehicleApiBase* api = wrapper->getApi();
-        if (api) {
-            UAirBlueprintLib::RunCommandOnGameThread([api]() {
-                api->reset();
-            }, true);
+        std::map<uint16_t, std::string>::const_iterator it_pawn = port_pawn_map_.find(it->first);
+        if (it_pawn->second == "Car")
+        {
+            VehiclePawnWrapper* wrapper = it->second;
+            msr::airlib::VehicleApiBase* api = wrapper->getApi();
+            if (api) {
+                UAirBlueprintLib::RunCommandOnGameThread([api]() {
+                    api->reset();
+                }, true);
+            }
         }
         it++;
     }
