@@ -1,3 +1,4 @@
+import airsim
 from AirSimClient import *
 
 client = MultirotorClient()

@@ -44,13 +44,13 @@ for idx in range(3):
     car_controls.brake = 0 #remove break
     
     # get camera images from the car
-    responses = client.simGetImages([
+    """responses = client.simGetImages([
         ImageRequest(0, AirSimImageType.DepthVis),  #depth visualiztion image
         ImageRequest(1, AirSimImageType.DepthPerspective, True), #depth in perspective projection
         ImageRequest(1, AirSimImageType.Scene), #scene vision image in png format
         ImageRequest(1, AirSimImageType.Scene, False, False)])  #scene vision image in uncompressed RGBA array
     print('Retrieved images: %d', len(responses))
-
+    
     for response in responses:
         filename = 'c:/temp/py' + str(idx)
 
@@ -67,7 +67,7 @@ for idx in range(3):
             img_rgba = np.flipud(img_rgba) #original image is fliped vertically
             img_rgba[:,:,1:2] = 100 #just for fun add little bit of green in all pixels
             AirSimClientBase.write_png(os.path.normpath(filename + '.greener.png'), img_rgba) #write to png 
-
+"""
 
 #restore to original state
 client.reset()
